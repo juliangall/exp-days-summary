@@ -1,5 +1,5 @@
 import React from 'react';
-import { AttendanceMatrix } from '../types';
+import { AttendanceMatrix, Event } from '../types';
 
 interface Props {
     data: AttendanceMatrix;
