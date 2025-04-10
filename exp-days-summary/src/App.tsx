@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { AttendanceTable } from './components/AttendanceTable'
 import { getEvents, getTickets, buildAttendanceMatrix } from './services/ticketTailor'
-import { AttendanceMatrix, Ticket } from './types'
+import { AttendanceMatrix, Ticket, Event } from './types'
 import './App.css'
 
 function App() {

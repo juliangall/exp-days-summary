@@ -11,7 +11,6 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
     // Function to format the date
     const formatDate = (event: Event) => {
         try {
-            // Access the date string from event.start.date
             const dateString = event.start.date;
             const [year, month, day] = dateString.split('-');
             const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -19,7 +18,7 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
             const formattedMonth = date.toLocaleString('en-US', { month: 'short' });
             return `${formattedDay}-${formattedMonth}`;
         } catch (error) {
-            console.error('Error formatting date:', event.start.date, error);
+            console.error('Error formatting date:', error);
             return 'Invalid Date';
         }
     };

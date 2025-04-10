@@ -1,7 +1,11 @@
 export interface Event {
     id: string;
     name: string;
-    start_at: string;
+    start: {
+        date: string;  // Format: "YYYY-MM-DD"
+        time: string;
+        timezone: string;
+    };
 }
 
 export interface Attendee {
@@ -18,7 +22,7 @@ export interface Ticket {
     last_name: string;
     full_name: string;
     status: string;
-    voided_at: null | string;
+    voided_at: string | null;
 }
 
 export interface AttendanceMatrix {
