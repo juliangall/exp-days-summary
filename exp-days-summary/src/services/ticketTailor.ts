@@ -1,10 +1,9 @@
 import axios from 'axios';
 import { Event, Ticket, AttendanceMatrix } from '../types';
-
-const BASE_URL = 'http://localhost:3000/api';
+import { API_URL } from '../config';
 
 const api = axios.create({
-    baseURL: BASE_URL
+    baseURL: API_URL
 });
 
 export const getEvents = async (startDate: string = '2025-01-01'): Promise<Event[]> => {
