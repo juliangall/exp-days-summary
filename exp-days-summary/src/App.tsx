@@ -81,7 +81,7 @@ function App() {
     ];
 
     // Create rows with attendee data
-    const rows = Object.entries(attendanceData.attendees).map(([email, info]) => {
+    const rows = Object.entries(attendanceData.attendees).map(([_, info]) => {
         return [
             info.fullName,
             ...attendanceData.events.map(event => info.attendance[event.id] ? '1' : '')
