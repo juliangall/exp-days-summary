@@ -9,12 +9,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, '..', '.env') });
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = process.env.VITE_TICKET_TAILOR_API_KEY;
+const API_KEY = process.env.TICKET_TAILOR_API_KEY;
 const BASE_URL = 'https://api.tickettailor.com/v1';
 
 const hashed = Buffer.from(API_KEY).toString('base64');
