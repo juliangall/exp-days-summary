@@ -1,3 +1,9 @@
+export interface TicketType {
+    id: string;
+    name: string;
+    quantity_total: number;
+}
+
 export interface Event {
     id: string;
     name: string;
@@ -12,7 +18,7 @@ export interface Event {
         timezone: string;
     };
     total_issued_tickets: number;
-    max_tickets_sold_per_occurrence: number;
+    ticket_types: TicketType[];
 }
 
 export interface Attendee {
