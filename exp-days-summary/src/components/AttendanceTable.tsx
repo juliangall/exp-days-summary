@@ -8,6 +8,8 @@ interface Props {
 }
 
 export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) => {
+    console.log('AttendanceTable rendered with data:', data);
+
     // Function to format the date
     const formatDate = (event: Event) => {
         try {
@@ -24,6 +26,7 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
     };
 
     const getTotalTickets = (event: Event) => {
+        console.log('getTotalTickets called for event:', event.name);
         const total = event.ticket_types.reduce((sum, type) => sum + type.quantity_total, 0);
         console.log(`Received ${total} total tickets for ${event.name}`);
         return total;
@@ -65,11 +68,15 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
                         ))}
                         <tr className="ticket-count">
                             <td>Total Tickets</td>
-                            {data.events.map(event => (
-                                <td key={`count-${event.id}`}>
-                                    {event.total_issued_tickets}/{getTotalTickets(event)}
-                                </td>
-                            ))}
+                            {data.events.map(event => {
+                                console.log('Rendering ticket count for event:', event.name);
+                                const total = getTotalTickets(event);
+                                return (
+                                    <td key={`count-${event.id}`}>
+                                        {event.total_issued_tickets}/{total}
+                                    </td>
+                                );
+                            })}
                         </tr>
                     </tbody>
                 </table>
