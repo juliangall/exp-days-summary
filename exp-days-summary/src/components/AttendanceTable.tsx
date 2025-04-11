@@ -57,6 +57,14 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
                                 ))}
                             </tr>
                         ))}
+                        <tr className="ticket-count">
+                            <td>Total Tickets</td>
+                            {data.events.map(event => (
+                                <td key={`count-${event.id}`}>
+                                    {event.total_issued_tickets}/{event.max_tickets_sold_per_occurrence}
+                                </td>
+                            ))}
+                        </tr>
                     </tbody>
                 </table>
             </div>

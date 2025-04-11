@@ -6,6 +6,13 @@ export interface Event {
         time: string;
         timezone: string;
     };
+    end?: {
+        date: string;
+        time: string;
+        timezone: string;
+    };
+    total_issued_tickets: number;
+    max_tickets_sold_per_occurrence: number;
 }
 
 export interface Attendee {

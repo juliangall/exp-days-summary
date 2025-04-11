@@ -118,3 +118,12 @@ th {
 th[rowspan="2"] {
     vertical-align: middle;
 }
+
+.ticket-count {
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.ticket-count td {
+    border-top: 2px solid #ddd;
+}
