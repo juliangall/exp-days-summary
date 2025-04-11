@@ -27,7 +27,8 @@ function App() {
         console.log(`Fetching tickets for event: ${event.name} (${event.id})`)
         try {
           const tickets = await getTickets(event.id)
-          console.log(`Received ${tickets.length} tickets for ${event.name}`)
+          console.log(`Received ${tickets.length} issued tickets for ${event.name}`)
+          console.log(`Received ${event.ticket_types.reduce((sum, type) => sum + type.quantity_total, 0)} total tickets for ${event.name}`)
           if (tickets && tickets.length > 0) {
             allTickets.push(...tickets)
           }
