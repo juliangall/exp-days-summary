@@ -23,6 +23,10 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
         }
     };
 
+    const getTotalTickets = (event: Event) => {
+        return event.ticket_types.reduce((sum, type) => sum + type.quantity_total, 0);
+    };
+
     return (
         <div className="attendance-container">
             <div className="controls">
@@ -61,7 +65,7 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
                             <td>Total Tickets</td>
                             {data.events.map(event => (
                                 <td key={`count-${event.id}`}>
-                                    {event.total_issued_tickets}/{event.max_tickets_sold_per_occurrence}
+                                    {event.total_issued_tickets}/{getTotalTickets(event)}
                                 </td>
                             ))}
                         </tr>
