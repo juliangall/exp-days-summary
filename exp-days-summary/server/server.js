@@ -11,7 +11,11 @@ dotenv.config({ path: join(__dirname, '..', '.env') });
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+    origin: ['https://juliangall.github.io', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 const API_KEY = process.env.TICKET_TAILOR_API_KEY;
