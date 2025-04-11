@@ -24,7 +24,9 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
     };
 
     const getTotalTickets = (event: Event) => {
-        return event.ticket_types.reduce((sum, type) => sum + type.quantity_total, 0);
+        const total = event.ticket_types.reduce((sum, type) => sum + type.quantity_total, 0);
+        console.log(`Received ${total} total tickets for ${event.name}`);
+        return total;
     };
 
     return (
