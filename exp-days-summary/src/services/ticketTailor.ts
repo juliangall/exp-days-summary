@@ -45,18 +45,34 @@ export const getTickets = async (eventId: string): Promise<Ticket[]> => {
 };
 
 export const buildAttendanceMatrix = (events: Event[], tickets: Ticket[]): AttendanceMatrix => {
+    console.log('Building matrix with events:', events.map(e => ({ id: e.id, name: e.name })));
+    console.log('Processing tickets:', tickets.map(t => ({ 
+        event_id: t.event_id, 
+        email: t.email, 
+        full_name: t.full_name,
+        status: t.status,
+        voided_at: t.voided_at
+    })));
+
     const matrix: AttendanceMatrix = {
         attendees: {},
         events: events
     };
 
     // Filter out invalid tickets
-    const validTickets = tickets.filter(ticket => 
-        ticket.status === 'valid' && 
-        !ticket.voided_at &&
-        ticket.email &&
-        ticket.full_name
-    );
+    const validTickets = tickets.filter(ticket => {
+        const isValid = ticket.status === 'valid' && 
+            !ticket.voided_at &&
+            ticket.email &&
+            ticket.full_name;
+        console.log(`Ticket ${ticket.full_name} for event ${ticket.event_id}:`, {
+            status: ticket.status,
+            voided_at: ticket.voided_at,
+            email: ticket.email,
+            isValid
+        });
+        return isValid;
+    });
 
     // First, create entries for all attendees
     validTickets.forEach(ticket => {
@@ -77,6 +93,7 @@ export const buildAttendanceMatrix = (events: Event[], tickets: Ticket[]): Atten
     validTickets.forEach(ticket => {
         const email = ticket.email;
         matrix.attendees[email].attendance[ticket.event_id] = true;
+        console.log(`Marking attendance for ${ticket.full_name} (${email}) at event ${ticket.event_id}`);
     });
 
     // Sort attendees by name
@@ -89,10 +106,10 @@ export const buildAttendanceMatrix = (events: Event[], tickets: Ticket[]): Atten
 
     matrix.attendees = sortedAttendees;
 
-    console.log('Matrix built:', {
+    console.log('Final matrix:', {
         events: events.length,
         attendees: Object.keys(matrix.attendees).length,
-        firstAttendee: Object.entries(matrix.attendees)[0]
+        sampleAttendee: Object.entries(matrix.attendees)[0]
     });
 
     return matrix;
