@@ -6,7 +6,7 @@ const api = axios.create({
     baseURL: API_URL
 });
 
-export const getEvents = async (startDate: string = '2025-01-01'): Promise<Event[]> => {
+export const getEvents = async (startDate: string = '2026-01-01'): Promise<Event[]> => {
     try {
         const timestamp = Math.floor(new Date(startDate).getTime() / 1000);
         console.log('Requesting events with timestamp:', timestamp);
