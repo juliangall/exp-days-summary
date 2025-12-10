@@ -33,7 +33,9 @@ const ticketTailorApi = axios.create({
 
 app.get('/api/events', async (req, res) => {
     try {
-        const response = await ticketTailorApi.get('/events');
+        const response = await ticketTailorApi.get('/events', {
+            params: req.query
+        });
         console.log('First event data:', JSON.stringify(response.data.data[0], null, 2));
         res.json(response.data);
     } catch (error) {
