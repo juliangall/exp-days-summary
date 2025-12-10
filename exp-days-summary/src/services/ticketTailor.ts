@@ -20,6 +20,13 @@ export const getEvents = async (startDate: string = '2026-01-01'): Promise<Event
             return eventDate >= cutoffDate;
         });
         
+        // Sort events chronologically by date
+        filteredEvents.sort((a: Event, b: Event) => {
+            const dateA = new Date(a.start.date).getTime();
+            const dateB = new Date(b.start.date).getTime();
+            return dateA - dateB;
+        });
+        
         console.log(`Filtered to ${filteredEvents.length} events after ${startDate}`);
         return filteredEvents;
     } catch (error) {
