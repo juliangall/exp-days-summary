@@ -8,15 +8,20 @@ const api = axios.create({
 
 export const getEvents = async (startDate: string = '2026-01-01'): Promise<Event[]> => {
     try {
-        const timestamp = Math.floor(new Date(startDate).getTime() / 1000);
-        console.log('Requesting events with timestamp:', timestamp);
+        // Fetch all events from the API
+        const response = await api.get('/events');
+        console.log('Total events received from API:', response.data.data?.length || 0);
         
-        const response = await api.get('/events', {
-            params: {
-                'start_at': timestamp
-            }
+        // Filter events on the client side to only include those after startDate
+        const cutoffDate = new Date(startDate);
+        const filteredEvents = response.data.data.filter((event: Event) => {
+            const eventDate = new Date(event.start.date);
+            console.log(`Event: ${event.name}, Date: ${event.start.date}, After cutoff: ${eventDate >= cutoffDate}`);
+            return eventDate >= cutoffDate;
         });
-        return response.data.data;
+        
+        console.log(`Filtered to ${filteredEvents.length} events after ${startDate}`);
+        return filteredEvents;
     } catch (error) {
         console.error('Error fetching events:', error);
         throw error;
