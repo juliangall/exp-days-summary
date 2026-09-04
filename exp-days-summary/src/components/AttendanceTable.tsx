@@ -41,16 +41,14 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
             <div className="table-container">
                 <table>
                     <thead>
+                        {/* Course name and date live in a single header row so it
+                            can stick to the top as one unit. */}
                         <tr>
-                            <th rowSpan={2}>Attendee</th>
+                            <th className="attendee-header">Attendee</th>
                             {data.events.map(event => (
-                                <th key={event.id}>{event.name}</th>
-                            ))}
-                        </tr>
-                        <tr>
-                            {data.events.map(event => (
-                                <th key={`date-${event.id}`} className="date-header">
-                                    {formatDate(event)}
+                                <th key={event.id} className="event-header" scope="col">
+                                    <span className="event-name">{event.name}</span>
+                                    <span className="event-date">{formatDate(event)}</span>
                                 </th>
                             ))}
                         </tr>
@@ -58,16 +56,18 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
                     <tbody>
                         {Object.entries(data.attendees).map(([email, info]) => (
                             <tr key={email}>
-                                <td>{info.fullName}</td>
+                                <th className="attendee-cell" scope="row">{info.fullName}</th>
                                 {data.events.map(event => (
-                                    <td key={event.id}>
+                                    <td key={event.id} className="attendance-cell">
                                         {info.attendance[event.id] ? '1' : ''}
                                     </td>
                                 ))}
                             </tr>
                         ))}
+                    </tbody>
+                    <tfoot>
                         <tr className="ticket-count">
-                            <td>Total Tickets</td>
+                            <th className="attendee-cell" scope="row">Total Tickets</th>
                             {data.events.map(event => {
                                 console.log('Rendering ticket count for event:', event.name);
                                 const total = getTotalTickets(event);
@@ -78,9 +78,9 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
                                 );
                             })}
                         </tr>
-                    </tbody>
+                    </tfoot>
                 </table>
             </div>
         </div>
     );
-}; 
+};

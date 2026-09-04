@@ -3,6 +3,15 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  /* Fill the viewport so the table can claim the leftover height and own its
+     own scrolling (required for the sticky header/column to work). */
+  box-sizing: border-box;
+  height: 100vh;
+  /* dvh keeps the layout correct on mobile, where 100vh includes the
+     collapsing browser chrome. */
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 .logo {
@@ -43,16 +52,37 @@
 
 .app {
     max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     padding: 20px;
+    box-sizing: border-box;
+    /* Column layout: heading + controls take their natural height, the table
+       container absorbs the rest. */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.app h1 {
+    flex: none;
+    margin: 0 0 0.5em;
 }
 
 .attendance-container {
     margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* Without min-height: 0 a flex item refuses to shrink below its content,
+       and the container would grow instead of scrolling. */
+    min-height: 0;
 }
 
 .controls {
+    flex: none;
     margin-bottom: 20px;
+    text-align: left;
 }
 
 .controls button {
@@ -69,30 +99,120 @@
     background-color: #45a049;
 }
 
+/* The single scroll container for the matrix, on both axes. Sticky cells are
+   positioned against this box. */
 .table-container {
-    overflow-x: auto;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    /* The matrix is always rendered light, regardless of the OS theme, so the
+       opaque backgrounds the sticky cells need stay legible. */
+    color: #213547;
 }
 
 table {
     width: 100%;
-    border-collapse: collapse;
+    /* separate + border-spacing: 0 rather than collapse — collapsed borders are
+       painted by the table, not the cells, so they vanish under sticky cells. */
+    border-collapse: separate;
+    border-spacing: 0;
     min-width: 600px;
 }
 
 th, td {
-    border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
 }
 
-th {
-    background-color: #f4f4f4;
+/* --- Sticky column headers (course name + date) --- */
+
+thead th {
     position: sticky;
     top: 0;
+    z-index: 3;
+    background-color: #f4f4f4;
+    vertical-align: bottom;
 }
 
-tr:nth-child(even) {
+.event-header {
+    min-width: 110px;
+    max-width: 170px;
+    text-align: center;
+}
+
+.event-header .event-name {
+    display: block;
+}
+
+.event-header .event-date {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.9em;
+    font-weight: normal;
+    color: #666;
+}
+
+/* --- Sticky attendee column --- */
+
+.attendee-header,
+.attendee-cell {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    width: 200px;
+    min-width: 200px;
+    font-weight: normal;
+    text-align: left;
+    /* Hint that content continues to the right of the frozen column. */
+    box-shadow: 1px 0 0 #ddd;
+}
+
+/* The corner cell overlaps both sticky axes, so it needs to win on both. */
+.attendee-header {
+    z-index: 5;
+    font-weight: bold;
+    vertical-align: middle;
+    background-color: #f4f4f4;
+}
+
+tbody tr:nth-child(even) td,
+tbody tr:nth-child(even) .attendee-cell {
     background-color: #f9f9f9;
+}
+
+/* Reading across a wide row is the whole task — highlight the row under the
+   pointer, including the frozen cell. */
+.table-container tbody tr:hover td,
+.table-container tbody tr:hover .attendee-cell {
+    background-color: #e8f2fb;
+}
+
+.attendance-cell {
+    text-align: center;
+}
+
+/* --- Sticky totals row --- */
+
+.ticket-count td,
+.ticket-count .attendee-cell {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    font-weight: bold;
+    text-align: center;
+    background-color: #f0f0f0;
+    border-top: 2px solid #ddd;
+}
+
+.ticket-count .attendee-cell {
+    z-index: 5;
+    text-align: left;
 }
 
 .error {
@@ -101,29 +221,28 @@ tr:nth-child(even) {
     text-align: center;
 }
 
-.date-header {
-    font-size: 0.9em;
-    font-weight: normal;
-    color: #666;
-    border-top: none !important;
-}
+/* On narrow screens the frozen column matters most, but 200px of it leaves
+   too little room for the matrix itself. */
+@media (max-width: 700px) {
+    #root {
+        padding: 1rem;
+    }
 
-th {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-    background-color: #f4f4f4;
-}
+    .app {
+        padding: 10px;
+    }
 
-th[rowspan="2"] {
-    vertical-align: middle;
-}
+    .app h1 {
+        font-size: 1.8rem;
+    }
 
-.ticket-count {
-    font-weight: bold;
-    background-color: #f0f0f0;
-}
+    .attendee-header,
+    .attendee-cell {
+        width: 130px;
+        min-width: 130px;
+    }
 
-.ticket-count td {
-    border-top: 2px solid #ddd;
+    .event-header {
+        min-width: 90px;
+    }
 }
