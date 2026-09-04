@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { AttendanceTable } from './components/AttendanceTable'
 import { getEvents, getTickets, buildAttendanceMatrix } from './services/ticketTailor'
 import { AttendanceMatrix, Ticket, Event } from './types'
@@ -8,6 +8,7 @@ function App() {
   const [attendanceData, setAttendanceData] = useState<AttendanceMatrix | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [futureOnly, setFutureOnly] = useState(true)
 
   const fetchData = async () => {
     try {
@@ -63,8 +64,35 @@ function App() {
     fetchData()
   }, [])
 
+  // Events use "YYYY-MM-DD", so a string comparison is both correct and immune
+  // to the UTC-midnight parsing that `new Date('YYYY-MM-DD')` would introduce.
+  const todayIso = () => {
+    const now = new Date();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    return `${now.getFullYear()}-${month}-${day}`;
+  };
+
+  // The view the table and the CSV export both render: when the toggle is on,
+  // drop past courses and any attendee left with nothing to attend.
+  const visibleData = useMemo(() => {
+    if (!attendanceData || !futureOnly) return attendanceData;
+
+    const today = todayIso();
+    const events = attendanceData.events.filter(event => event.start.date >= today);
+    const attendees = Object.fromEntries(
+      Object.entries(attendanceData.attendees)
+        .filter(([, info]) => events.some(event => info.attendance[event.id]))
+    );
+
+    console.log(`Future-only filter: ${events.length}/${attendanceData.events.length} events, ` +
+      `${Object.keys(attendees).length}/${Object.keys(attendanceData.attendees).length} attendees`);
+
+    return { events, attendees };
+  }, [attendanceData, futureOnly])
+
   const handleExport = () => {
-    if (!attendanceData) return;
+    if (!visibleData) return;
 
     const formatDate = (event: Event) => {
         const dateString = event.start.date;
@@ -77,15 +105,15 @@ function App() {
 
     // Create headers with course names and dates
     const headers = [
-        ['Attendee', ...attendanceData.events.map(event => event.name)],
-        ['', ...attendanceData.events.map(event => formatDate(event))]
+        ['Attendee', ...visibleData.events.map(event => event.name)],
+        ['', ...visibleData.events.map(event => formatDate(event))]
     ];
 
     // Create rows with attendee data
-    const rows = Object.entries(attendanceData.attendees).map(([_, info]) => {
+    const rows = Object.entries(visibleData.attendees).map(([, info]) => {
         return [
             info.fullName,
-            ...attendanceData.events.map(event => info.attendance[event.id] ? '1' : '')
+            ...visibleData.events.map(event => info.attendance[event.id] ? '1' : '')
         ];
     });
 
@@ -100,20 +128,22 @@ function App() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'attendance.csv';
+    a.download = futureOnly ? 'attendance-future.csv' : 'attendance.csv';
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
   if (loading) return <div>Loading...</div>
   if (error) return <div className="error">{error}</div>
-  if (!attendanceData) return <div>No data available</div>
+  if (!attendanceData || !visibleData) return <div>No data available</div>
 
   return (
     <div className="app">
       <h1>Experience Day Attendance</h1>
       <AttendanceTable 
-        data={attendanceData}
+        data={visibleData}
+        futureOnly={futureOnly}
+        onFutureOnlyChange={setFutureOnly}
         onExport={handleExport}
         onRefresh={fetchData}
       />

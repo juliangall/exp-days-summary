@@ -3,11 +3,19 @@ import { AttendanceMatrix, Event } from '../types';
 
 interface Props {
     data: AttendanceMatrix;
+    futureOnly: boolean;
+    onFutureOnlyChange: (value: boolean) => void;
     onExport: () => void;
     onRefresh: () => void;
 }
 
-export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) => {
+export const AttendanceTable: React.FC<Props> = ({
+    data,
+    futureOnly,
+    onFutureOnlyChange,
+    onExport,
+    onRefresh,
+}) => {
     console.log('AttendanceTable rendered with data:', data);
 
     // Function to format the date
@@ -37,7 +45,22 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
             <div className="controls">
                 <button onClick={onRefresh}>Refresh Data</button>
                 <button onClick={onExport}>Export to CSV</button>
+                <label className="toggle">
+                    <input
+                        type="checkbox"
+                        role="switch"
+                        checked={futureOnly}
+                        onChange={event => onFutureOnlyChange(event.target.checked)}
+                    />
+                    <span className="toggle-track" aria-hidden="true" />
+                    <span>Future courses only</span>
+                </label>
             </div>
+            {data.events.length === 0 ? (
+                <div className="table-container empty-state">
+                    No future courses.
+                </div>
+            ) : (
             <div className="table-container">
                 <table>
                     <thead>
@@ -81,6 +104,7 @@ export const AttendanceTable: React.FC<Props> = ({ data, onExport, onRefresh }) 
                     </tfoot>
                 </table>
             </div>
+            )}
         </div>
     );
 };
