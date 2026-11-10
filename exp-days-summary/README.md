@@ -1,5 +1,27 @@
 # React + TypeScript + Vite
 
+## Attendance sessions
+
+The Rob Cosman SFWW Showcase (`ev_8952588`) sells three sessions as Ticket
+Tailor ticket types. It appears as three columns, labelled with the event name,
+session name/time and date. Each booking is matched by `ticket_type_id`; each
+column shows that session's issued count and capacity. CSV exports use the same
+session columns and quote fields containing commas or quotation marks.
+
+Events with separate sessions are listed in `SESSION_EVENT_IDS` in
+`src/services/attendance.ts`. Add another event ID there when its ticket types
+represent separate sessions. Other events retain one column, including events
+with multiple price categories for the same activity.
+
+Both event and ticket requests follow Ticket Tailor's pagination links through
+the existing proxy. A failed request stops loading with an error so that an
+incomplete booking list is not displayed as a complete summary.
+
+Run `npm test` with Node.js 22.18+ to check session attendance, totals, CSV
+escaping and pagination. Run `npm run build` and `npm run lint` for the frontend
+checks. These frontend changes require a GitHub Pages deployment; the proxy
+does not need an update.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

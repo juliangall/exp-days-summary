@@ -71,6 +71,7 @@ export const AttendanceTable: React.FC<Props> = ({
                             {data.events.map(event => (
                                 <th key={event.id} className="event-header" scope="col">
                                     <span className="event-name">{event.name}</span>
+                                    {event.session_name && <span className="session-name">{event.session_name}</span>}
                                     <span className="event-date">{formatDate(event)}</span>
                                 </th>
                             ))}

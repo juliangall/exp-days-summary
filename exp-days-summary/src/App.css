@@ -160,6 +160,12 @@ thead th {
     color: #666;
 }
 
+.event-header .session-name {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.95em;
+}
+
 /* --- Sticky attendee column --- */
 
 .attendee-header,

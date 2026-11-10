@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { AttendanceTable } from './components/AttendanceTable'
 import { getEvents, getTickets, buildAttendanceMatrix } from './services/ticketTailor'
-import { AttendanceMatrix, Ticket, Event } from './types'
+import type { AttendanceMatrix, Ticket } from './types'
+import { buildAttendanceCsv } from './services/attendanceCsv'
 import './App.css'
 
 function App() {
@@ -26,24 +27,13 @@ function App() {
       
       for (const event of events) {
         console.log(`Fetching tickets for event: ${event.name} (${event.id})`)
-        try {
-          const tickets = await getTickets(event.id)
-          console.log(`Received ${tickets.length} issued tickets for ${event.name}`)
-          console.log(`Received ${event.ticket_types.reduce((sum, type) => sum + type.quantity_total, 0)} total tickets for ${event.name}`)
-          if (tickets && tickets.length > 0) {
-            allTickets.push(...tickets)
-          }
-        } catch (err) {
-          console.error(`Error fetching tickets for event ${event.name}:`, err)
-        }
+        const tickets = await getTickets(event.id)
+        console.log(`Received ${tickets.length} issued tickets for ${event.name}`)
+        allTickets.push(...tickets)
       }
 
       console.log(`Total tickets collected: ${allTickets.length}`)
       
-      if (allTickets.length === 0) {
-        throw new Error('No tickets found for any events')
-      }
-
       const matrix = buildAttendanceMatrix(events, allTickets)
       console.log('Final matrix:', {
         events: matrix.events.length,
@@ -94,34 +84,7 @@ function App() {
   const handleExport = () => {
     if (!visibleData) return;
 
-    const formatDate = (event: Event) => {
-        const dateString = event.start.date;
-        const [year, month, day] = dateString.split('-');
-        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        const formattedDay = date.getDate().toString().padStart(2, '0');
-        const formattedMonth = date.toLocaleString('en-US', { month: 'short' });
-        return `${formattedDay}-${formattedMonth}`;
-    };
-
-    // Create headers with course names and dates
-    const headers = [
-        ['Attendee', ...visibleData.events.map(event => event.name)],
-        ['', ...visibleData.events.map(event => formatDate(event))]
-    ];
-
-    // Create rows with attendee data
-    const rows = Object.entries(visibleData.attendees).map(([, info]) => {
-        return [
-            info.fullName,
-            ...visibleData.events.map(event => info.attendance[event.id] ? '1' : '')
-        ];
-    });
-
-    // Combine headers and rows
-    const csvContent = [
-        ...headers.map(row => row.join(',')),
-        ...rows.map(row => row.join(','))
-    ].join('\n');
+    const csvContent = buildAttendanceCsv(visibleData);
 
     // Create and trigger download
     const blob = new Blob([csvContent], { type: 'text/csv' });

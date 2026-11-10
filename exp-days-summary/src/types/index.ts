@@ -2,6 +2,8 @@ export interface TicketType {
     id: string;
     name: string;
     quantity_total: number;
+    quantity_issued?: number;
+    sort_order?: number;
 }
 
 export interface Event {
@@ -30,12 +32,19 @@ export interface Attendee {
 export interface Ticket {
     id: string;
     event_id: string;
+    ticket_type_id?: string | null;
     email: string;
     first_name: string;
     last_name: string;
     full_name: string;
     status: string;
     voided_at: string | null;
+}
+
+export interface AttendanceColumn extends Event {
+    event_id: string;
+    ticket_type_id?: string;
+    session_name?: string;
 }
 
 export interface AttendanceMatrix {
@@ -45,5 +54,5 @@ export interface AttendanceMatrix {
             attendance: { [eventId: string]: boolean };
         };
     };
-    events: Event[];
-} 
+    events: AttendanceColumn[];
+}

@@ -1,5 +1,8 @@
 import axios from 'axios';
-import { Event, Ticket, AttendanceMatrix } from '../types';
+import type { Event, Ticket } from '../types';
+import { fetchAllPages } from './pagination';
+import type { TicketTailorPage } from './pagination';
+export { buildAttendanceMatrix } from './attendance';
 import { API_URL } from '../config';
 
 const api = axios.create({
@@ -9,12 +12,15 @@ const api = axios.create({
 export const getEvents = async (startDate: string = '2026-01-01'): Promise<Event[]> => {
     try {
         // Fetch all events from the API
-        const response = await api.get('/events');
-        console.log('Total events received from API:', response.data.data?.length || 0);
+        const events = await fetchAllPages<Event>(async params => {
+            const response = await api.get<TicketTailorPage<Event>>('/events', { params });
+            return response.data;
+        });
+        console.log('Total events received from API:', events.length);
         
         // Filter events on the client side to only include those after startDate
         const cutoffDate = new Date(startDate);
-        const filteredEvents = response.data.data.filter((event: Event) => {
+        const filteredEvents = events.filter((event: Event) => {
             const eventDate = new Date(event.start.date);
             console.log(`Event: ${event.name}, Date: ${event.start.date}, After cutoff: ${eventDate >= cutoffDate}`);
             return eventDate >= cutoffDate;
@@ -37,17 +43,10 @@ export const getEvents = async (startDate: string = '2026-01-01'): Promise<Event
 
 export const getTickets = async (eventId: string): Promise<Ticket[]> => {
     try {
-        const response = await api.get(`/tickets`, {
-            params: {
-                'event_id': eventId
-            }
-        });
-        
-        if (!response.data.data) {
-            return [];
-        }
-
-        const tickets = response.data.data;
+        const tickets = await fetchAllPages<Ticket>(async params => {
+            const response = await api.get<TicketTailorPage<Ticket>>('/tickets', { params });
+            return response.data;
+        }, { event_id: eventId });
         console.log(`Got ${tickets.length} tickets for event ${eventId}`);
         return tickets;
     } catch (error) {
@@ -55,74 +54,3 @@ export const getTickets = async (eventId: string): Promise<Ticket[]> => {
         throw error;
     }
 };
-
-export const buildAttendanceMatrix = (events: Event[], tickets: Ticket[]): AttendanceMatrix => {
-    console.log('Building matrix with events:', events.map(e => ({ id: e.id, name: e.name })));
-    console.log('Processing tickets:', tickets.map(t => ({ 
-        event_id: t.event_id, 
-        email: t.email, 
-        full_name: t.full_name,
-        status: t.status,
-        voided_at: t.voided_at
-    })));
-
-    const matrix: AttendanceMatrix = {
-        attendees: {},
-        events: events
-    };
-
-    // Filter out invalid tickets
-    const validTickets = tickets.filter(ticket => {
-        const isValid = ticket.status === 'valid' && 
-            !ticket.voided_at &&
-            ticket.email &&
-            ticket.full_name;
-        console.log(`Ticket ${ticket.full_name} for event ${ticket.event_id}:`, {
-            status: ticket.status,
-            voided_at: ticket.voided_at,
-            email: ticket.email,
-            isValid
-        });
-        return isValid;
-    });
-
-    // First, create entries for all attendees
-    validTickets.forEach(ticket => {
-        const email = ticket.email;
-        if (!matrix.attendees[email]) {
-            matrix.attendees[email] = {
-                fullName: ticket.full_name,
-                attendance: {}
-            };
-            // Initialize all events as false
-            events.forEach(event => {
-                matrix.attendees[email].attendance[event.id] = false;
-            });
-        }
-    });
-
-    // Then mark attendance for each ticket
-    validTickets.forEach(ticket => {
-        const email = ticket.email;
-        matrix.attendees[email].attendance[ticket.event_id] = true;
-        console.log(`Marking attendance for ${ticket.full_name} (${email}) at event ${ticket.event_id}`);
-    });
-
-    // Sort attendees by name
-    const sortedAttendees: { [email: string]: any } = {};
-    Object.keys(matrix.attendees)
-        .sort((a, b) => matrix.attendees[a].fullName.localeCompare(matrix.attendees[b].fullName))
-        .forEach(email => {
-            sortedAttendees[email] = matrix.attendees[email];
-        });
-
-    matrix.attendees = sortedAttendees;
-
-    console.log('Final matrix:', {
-        events: events.length,
-        attendees: Object.keys(matrix.attendees).length,
-        sampleAttendee: Object.entries(matrix.attendees)[0]
-    });
-
-    return matrix;
-}; 
